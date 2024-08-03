@@ -1,1 +1,1 @@
-llowedchanges=0
+frequency=44100

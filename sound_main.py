@@ -6,7 +6,7 @@ import time
 import pygame
 
 def main():
-    sd.default.latency = 'low'
+    # sd.default.latency = 'low'
     
     points = {"A": (10,10), "B": (20,20), "C": (0, 0), "D": (9,40)}
     finger_tip = (15,14)
@@ -14,7 +14,7 @@ def main():
     bounding_box_size = 2
     num_bounding_boxes = 10
     shape_steps = [-5,-12,-3,-8]
-    shape_steps = [-10 for i in range(4)]
+    shape_steps = [0 for i in range(4)]
     
     pygame.mixer.pre_init(channels=1, allowedchanges=0)
     pygame.init()
@@ -38,13 +38,18 @@ def main():
             selected_bounding_box_index = i
             break
     
+    time.sleep(2)
     if selected_bounding_box_index is None:
         print("Finger tip is not in bounding box")
     else:
+        prev_pair = None
         for pair in pairs[starting_note+nearest_line_connection]:
-            pair.play()
-            time.sleep(0.2)
-            pair.stop()
+            pygame.mixer.Sound.play(pair)
+            time.sleep(1)
+            if prev_pair is not None:
+                prev_pair.fadeout(200)
+            prev_pair = pair
+            # pair.stop()
         # pairs[starting_note+nearest_line_connection][0].play()
         # time.sleep(0.5)
         # pairs[starting_note+nearest_line_connection][selected_bounding_box_index].play()
