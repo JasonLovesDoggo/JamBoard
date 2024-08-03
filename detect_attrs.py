@@ -56,11 +56,15 @@ def calibrate(frame, paper_roi):
 
 # Initialize MediaPipe hands
 mp_hands = mp.solutions.hands
-hands = mp_hands.Hands(static_image_mode=False, max_num_hands=1, min_detection_confidence=0.7)
+hands = mp_hands.Hands(static_image_mode=False, max_num_hands=1, min_detection_confidence=0.5)
 mp_drawing = mp.solutions.drawing_utils
 
 # Initialize webcam (use index 1 for the second webcam)
 cap = cv2.VideoCapture(1)
+if not cap.isOpened():
+    print("Error: Could not open webcam.")
+    exit()
+
 
 # Define paper boundaries (you may need to adjust these values)
 paper_roi = (100, 100, 540, 380)  # (x1, y1, x2, y2)
