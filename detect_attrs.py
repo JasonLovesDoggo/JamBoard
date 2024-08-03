@@ -5,16 +5,16 @@ import pickle
 import os
 import time
 import sys
-from typing import Type
+from typing import Optional, Type
 
 CALIBRATION_PATH = "calibration.pkl"
 
 
 class MediaPipeHands:
-    _instance: Type["MediaPipeHands"] = None
+    _instance: Optional["MediaPipeHands"] = None
     hands: mp.solutions.hands.Hands
-    drawing_utils: mp.solutions.drawing_utils
-    drawing_styles: mp.solutions.drawing_styles
+    drawing_utils: Type[mp.solutions.drawing_utils]
+    drawing_styles: Type[mp.solutions.drawing_styles]
 
     def __new__(cls: Type["MediaPipeHands"]) -> "MediaPipeHands":
         if cls._instance is None:
@@ -110,7 +110,9 @@ def detect_shadows(frame, paper_roi) -> np.ndarray:
 # Check shadows around fingertip to see if they meet threshold
 # (given overhead lighting, less visible shadow means it's closer to the paper)
 def is_fingertip_touching(fingertip_x, fingertip_y, shadow_mask, threshold=0.5):
+    print(f'{fingertip_x=} {fingertip_y=} {shadow_mask=} {threshold=}')
     neighborhood = shadow_mask[fingertip_y - 2 : fingertip_y + 2, fingertip_x - 2 : fingertip_x + 2]
+    # print('neighborhood',neighborhood)
     # cv2.imshow("neighborhood", neighborhood)
     shadow_pixels = cv2.countNonZero(neighborhood)
     total_pixels = neighborhood.size
