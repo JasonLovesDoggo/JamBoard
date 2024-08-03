@@ -5,14 +5,18 @@ import pickle
 import os
 import time
 import sys
+from typing import Type
 
 CALIBRATION_PATH = "calibration.pkl"
 
 
 class MediaPipeHands:
-    _instance = None
+    _instance: Type["MediaPipeHands"] = None
+    hands: mp.solutions.hands.Hands
+    drawing_utils: mp.solutions.drawing_utils
+    drawing_styles: mp.solutions.drawing_styles
 
-    def __new__(cls):
+    def __new__(cls: Type["MediaPipeHands"]) -> "MediaPipeHands":
         if cls._instance is None:
             cls._instance = super(MediaPipeHands, cls).__new__(cls)
             start_time = time.time()
@@ -92,7 +96,7 @@ def calibrate(frame, paper_roi):
 
 # Detect shadows
 # Converts frame --> grayscale, apply gaussian blur, create shadow mask
-def detect_shadows(frame):
+def detect_shadows(frame) -> np.ndarray:
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     blurred = cv2.GaussianBlur(gray, (5, 5), 0)
     shadow_mask = cv2.adaptiveThreshold(
