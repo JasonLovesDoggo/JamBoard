@@ -5,21 +5,22 @@ import librosa
 import time
 import pygame
 
+
 def main():
     # sd.default.latency = 'low'
-    
-    points = {"A": (10,10), "B": (20,20), "C": (0, 0), "D": (9,40)}
-    finger_tip = (15,14)
+
+    points = {"A": (10, 10), "B": (20, 20), "C": (0, 0), "D": (9, 40)}
+    finger_tip = (15, 14)
     starting_note = "A"
     bounding_box_size = 2
     num_bounding_boxes = 10
-    shape_steps = [-5,-12,-3,-8]
+    shape_steps = [-5, -12, -3, -8]
     shape_steps = [0 for i in range(4)]
-    
-    pygame.mixer.pre_init(frequency = 16000, channels=1, allowedchanges=0)
+
+    pygame.mixer.pre_init(frequency=16000, channels=1, allowedchanges=0)
     pygame.init()
     pygame.mixer.init()
-    
+
     pairs = create_pairs(list(points.keys()), num_bounding_boxes, shape_steps)
 
     nearest_line_connection = find_nearest_line_to_finger_tip(
@@ -37,13 +38,13 @@ def main():
         ):
             selected_bounding_box_index = i
             break
-    
+
     time.sleep(2)
     if selected_bounding_box_index is None:
         print("Finger tip is not in bounding box")
     else:
         prev_pair = None
-        for pair in pairs[starting_note+nearest_line_connection]:
+        for pair in pairs[starting_note + nearest_line_connection]:
             pygame.mixer.Sound.play(pair)
             time.sleep(1)
             if prev_pair is not None:
@@ -57,8 +58,7 @@ def main():
         # pairs[starting_note+nearest_line_connection][-1].play()
         # time.sleep(0.5)
         pass
-    
+
+
 if __name__ == "__main__":
     main()
-    
-

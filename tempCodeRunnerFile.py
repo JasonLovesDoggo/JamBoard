@@ -1,1 +1,1 @@
-frequency=44100
+frequency = 44100
