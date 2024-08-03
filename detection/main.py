@@ -87,6 +87,7 @@ def start():
                     index_tip = hand_landmarks.landmark[
                         mp_hands.HandLandmark.INDEX_FINGER_TIP
                     ]
+                    print('finger tip',index_tip)
                     finger_tip = (int(index_tip.x * w), int(index_tip.y * h))
                     # print('the finger tip is currently at',finger_tip)
                     cv2.circle(image, finger_tip, 10, (0, 255, 0), cv2.FILLED)
