@@ -96,8 +96,9 @@ def calibrate(frame, paper_roi):
 
 # Detect shadows
 # Converts frame --> grayscale, apply gaussian blur, create shadow mask
-def detect_shadows(frame) -> np.ndarray:
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+def detect_shadows(frame, paper_roi) -> np.ndarray:
+    paper_area = frame[paper_roi[1] : paper_roi[3], paper_roi[0] : paper_roi[2]]
+    gray = cv2.cvtColor(paper_area, cv2.COLOR_BGR2GRAY)
     blurred = cv2.GaussianBlur(gray, (5, 5), 0)
     shadow_mask = cv2.adaptiveThreshold(
         blurred, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 11, 0
@@ -108,11 +109,12 @@ def detect_shadows(frame) -> np.ndarray:
 
 # Check shadows around fingertip to see if they meet threshold
 # (given overhead lighting, less visible shadow means it's closer to the paper)
-def is_fingertip_touching(cx, cy, shadow_mask, threshold=0.5):
-    neighborhood = shadow_mask[cy - 2 : cy + 2, cx - 2 : cx + 2]
+def is_fingertip_touching(fingertip_x, fingertip_y, shadow_mask, threshold=0.5):
+    neighborhood = shadow_mask[fingertip_y - 2 : fingertip_y + 2, fingertip_x - 2 : fingertip_x + 2]
     # cv2.imshow("neighborhood", neighborhood)
     shadow_pixels = cv2.countNonZero(neighborhood)
     total_pixels = neighborhood.size
+    print('total pixels',total_pixels)
     # division by zero ... means that total_pixels is zero
     # why is total pixels zero
     return shadow_pixels / total_pixels < threshold
@@ -210,7 +212,7 @@ while cap.isOpened():
     ret, frame = cap.read()
 
     cv2.imshow("image before shadowmask", frame)
-    shadow_mask = detect_shadows(frame)
+    shadow_mask = detect_shadows(frame, paper_roi)
 
     touched_shape = None
     for shape_name, (cx, cy), color, area in calibrated_shapes:
@@ -225,21 +227,12 @@ while cap.isOpened():
             2,
         )
 
-        # distance is how close you are to the centerpoint
         if finger_tip:
-            # finger tip is a tuple (x,y) of where the finger is right now
-            # shadow mask is the image but highlights the shadows
+            # finger_tip[0] is x, finger_tip[1] is y
             if is_fingertip_touching(finger_tip[0], finger_tip[1], shadow_mask):
-                distance = np.sqrt(
-                    (finger_tip[0] - cx) ** 2 + (finger_tip[1] - cy) ** 2
-                )
-                if distance < 30:  # Adjust this threshold as needed
-                    touched_shape = shape_name
-
-    if finger_tip:
-        distance = np.sqrt((finger_tip[0] - cx) ** 2 + (finger_tip[1] - cy) ** 2)
-        if distance < 30:
-            touched_shape = (shape_name, (cx, cy), color, area)
+                distance = np.sqrt((finger_tip[0] - cx) ** 2 + (finger_tip[1] - cy) ** 2)
+                if distance < 30:
+                    touched_shape = (shape_name, (cx, cy), color, area)
 
     if touched_shape:
         if touch_cooldown == 0:

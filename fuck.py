@@ -26,8 +26,11 @@ def create_pairs(shapes, num_bounding_boxes, shape_steps):
                 rainbow = []
                 for k in range(1, num_bounding_boxes + 1):
                     pitch_shifted = librosa.effects.pitch_shift(y, sr=sr, n_steps=steps_per_interval*k)
-                    # time_stretched = librosa.effects.time_stretch(pitch_shifted, rate=1)
-                    rainbow.append(pygame.sndarray.make_sound((pitch_shifted * 32767).astype(np.int16)))
+                    time_stretched = librosa.effects.time_stretch(pitch_shifted, rate=1)
+                    a = (time_stretched * 32767).astype(np.int16)
+                    # sd.play(a, sr)
+                    # time.sleep(1)
+                    rainbow.append(pygame.sndarray.make_sound(a))
                 
 
                 key = shapes[i] + shapes[j]
