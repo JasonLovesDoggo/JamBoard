@@ -7,6 +7,9 @@ def get_shape_name(approx, contour):
     peri = cv2.arcLength(contour, True)
     area = cv2.contourArea(contour)
     circularity = 4 * np.pi * area / (peri * peri) if peri > 0 else 0
+    print(f'{circularity=}')
+    print(f'{peri=}')
+    print(f'{area=}')
 
     if len(approx) == 3:
         return 'Triangle'
@@ -33,8 +36,14 @@ def calibrate(frame, paper_roi):
     blurred = cv2.GaussianBlur(gray, (5, 5), 0)
     
     # Use adaptive thresholding to handle shadows better
-    threshold = cv2.adaptiveThreshold(blurred, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 11, 2)
-    
+    threshold = cv2.adaptiveThreshold(blurred, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 11, 5)
+    img = threshold.copy()
+
+
+    cv2.imwrite('color_img.jpg', img)
+    cv2.imshow("image", img)
+    # cv2.waitKey() # wait for key press
+    print(f'{threshold.shape=}')
     contours, _ = cv2.findContours(threshold, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     
     shapes = []
@@ -135,7 +144,8 @@ while cap.isOpened():
         break
     elif key == ord('c'):
         print("Recalibrating...")
-        calibrated_shapes = calibrate(image, paper_roi)
+        _, frame = cap.read()
+        calibrated_shapes = calibrate(frame, paper_roi)
 
 hands.close()
 cap.release()
