@@ -42,3 +42,9 @@ def load_calibration():
         with open(CALIBRATION_PATH, "rb") as f:
             return pickle.load(f)
         return None
+
+
+    # Iterate through detected hands and check if the finger is pressed
+    # for hand_landmarks in results.multi_hand_landmarks:
+    #     if finger_is_pressed(hand_landmarks, threshold):
+    #         return True
