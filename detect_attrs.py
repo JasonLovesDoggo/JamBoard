@@ -168,14 +168,20 @@ while cap.isOpened():
     if results.multi_hand_landmarks:
         for hand_landmarks in results.multi_hand_landmarks:
             # Draw hand landmarks
-            drawing_utils.draw_landmarks(image, hand_landmarks, hands.HAND_CONNECTIONS)
+            drawing_utils.draw_landmarks(image, hand_landmarks, mp_hands.HAND_CONNECTIONS)
             
             # Get index fingertip coordinates
             h, w, c = image.shape
-            index_tip = hand_landmarks.landmark[hands.HandLandmark.INDEX_FINGER_TIP]
+            index_tip = hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP]
             finger_tip = (int(index_tip.x * w), int(index_tip.y * h))
             # print('the finger tip is currently at',finger_tip)
             cv2.circle(image, finger_tip, 10, (0, 255, 0), cv2.FILLED)
+
+    # shadow detection
+    ret, frame = cap.read()
+
+    cv2.imshow("image before shadowmask", frame)
+    shadow_mask = detect_shadows(frame)
 
     touched_shape = None
     for shape_name, (cx, cy), color, area in calibrated_shapes:
@@ -189,13 +195,7 @@ while cap.isOpened():
             if is_fingertip_touching(finger_tip[0], finger_tip[1], shadow_mask):
                 distance = np.sqrt((finger_tip[0] - cx)**2 + (finger_tip[1] - cy)**2)
                 if distance < 30:  # Adjust this threshold as needed
-                    touched_shape = shape_name
-
-    # shadow detection
-    ret, frame = cap.read()
-
-    cv2.imshow("image before shadowmask", frame)
-    shadow_mask = detect_shadows(frame)
+                    touched_shape = shape_name    
 
     if finger_tip:
         distance = np.sqrt((finger_tip[0] - cx) ** 2 + (finger_tip[1] - cy) ** 2)
