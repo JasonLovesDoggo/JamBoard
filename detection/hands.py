@@ -2,6 +2,7 @@ from typing import Optional, Type
 import time
 import mediapipe as mp
 
+
 class MediaPipeHands:
     _instance: Optional["MediaPipeHands"] = None
     hands: mp.solutions.hands.Hands

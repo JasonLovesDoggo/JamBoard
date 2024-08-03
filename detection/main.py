@@ -1,10 +1,12 @@
 import cv2
 import mediapipe as mp
+import numpy as np
 import sys
 from .hands import MediaPipeHands
 from .utils import calibrate, load_calibration
 from .types import ShapeData
 
+CURRENT_OBJECT: ShapeData | None = None
 
 # Initialize MediaPipe hands
 mp_hands = mp.solutions.hands
@@ -15,6 +17,7 @@ mp_drawing = mp.solutions.drawing_utils
 
 
 def start():
+    global CURRENT_OBJECT
     hands_instance = MediaPipeHands()
     hands = hands_instance.hands
     mp_hands = mp.solutions.hands
@@ -44,11 +47,8 @@ def start():
                 exit()
             calibrated_shapes = calibrate(frame, paper_roi)
 
-        last_touched_shape = None
-        touch_cooldown = 0
-        COOLDOWN_FRAMES = 15  # Adjust this value to change the cooldown period
-
         while cap.isOpened():
+            print(f'{CURRENT_OBJECT=}')
             success, image = cap.read()
             if not success:
                 print("Ignoring empty camera frame.")
@@ -83,7 +83,7 @@ def start():
                     )
 
                     # Get index fingertip coordinates
-                    h, w, c = image.shape
+                    h, w, _ = image.shape
                     index_tip = hand_landmarks.landmark[
                         mp_hands.HandLandmark.INDEX_FINGER_TIP
                     ]
@@ -94,7 +94,6 @@ def start():
 
             # shadow detection
             ret, frame = cap.read()
-            touched_shape = None
             for shape_name, (cx, cy), color, area in calibrated_shapes:
                 cv2.circle(image, (cx, cy), 5, (0, 255, 0), -1)
                 cv2.putText(
@@ -107,17 +106,51 @@ def start():
                     2,
                 )
 
-            if touched_shape:
-                if touch_cooldown == 0:
-                    shape_name, (cx, cy), color, area = touched_shape
-                    data = ShapeData(
-                        size=area, color=color, center=(cx, cy), name=shape_name
-                    )
-                    print(f"Touched: {data}")
-                    touch_cooldown = COOLDOWN_FRAMES
+            CURRENT_OBJECT = None  # Reset CURRENT_OBJECT at the start of each frame
+            if finger_tip:
+                for shape_name, (cx, cy), color, area in calibrated_shapes:
+                    # Calculate the bounding box of the shape
+                    # Assuming the shape is roughly circular, we'll use the area to estimate the radius
+                    radius = np.sqrt(area / np.pi)
+                    shape_left = cx - radius
+                    shape_right = cx + radius
+                    shape_top = cy - radius
+                    shape_bottom = cy + radius
 
-            if touch_cooldown > 0:
-                touch_cooldown -= 1
+                    # Check if the finger_tip is within the shape's bounding box
+                    if (
+                        shape_left <= finger_tip[0] <= shape_right
+                        and shape_top <= finger_tip[1] <= shape_bottom
+                    ):
+                        CURRENT_OBJECT = ShapeData(
+                            size=area, color=color, center=(cx, cy), name=shape_name
+                        )
+                        break  # Exit the loop once we've found a shape the finger is hovering over
+
+            # Draw shapes and their names
+
+            for shape_name, (cx, cy), color, area in calibrated_shapes:
+                cv2.circle(image, (cx, cy), 5, (0, 255, 0), -1)
+                cv2.putText(
+                    image,
+                    shape_name,
+                    (cx + 10, cy),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.5,
+                    (255, 255, 255),
+                    2,
+                )
+
+            # Highlight the shape being hovered over
+            if CURRENT_OBJECT:
+                cx, cy = CURRENT_OBJECT.center
+                radius = int(np.sqrt(CURRENT_OBJECT.size / np.pi))
+                cv2.circle(
+                    image, (cx, cy), radius, (0, 255, 255), 2
+                )  # Yellow highlight
+
+            if CURRENT_OBJECT:
+                print(f"Hovering over: {CURRENT_OBJECT}")
 
             cv2.imshow("Shapes and Hand Detection", image)
 

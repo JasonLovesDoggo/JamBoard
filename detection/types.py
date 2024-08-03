@@ -2,7 +2,7 @@ import dataclasses
 
 
 @dataclasses.dataclass
-class ShapeData():
+class ShapeData:
     size: int  # area
     color: tuple[int, int, int]  # RGB (or BGR)
     center: tuple[int, int]  # (cx, cy)
