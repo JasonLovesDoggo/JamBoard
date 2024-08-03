@@ -144,11 +144,11 @@ while cap.isOpened():
     if results.multi_hand_landmarks:
         for hand_landmarks in results.multi_hand_landmarks:
             # Draw hand landmarks
-            mp_drawing.draw_landmarks(image, hand_landmarks, mp_hands.HAND_CONNECTIONS)
+            drawing_utils.draw_landmarks(image, hand_landmarks, hands.HAND_CONNECTIONS)
             
             # Get index fingertip coordinates
             h, w, c = image.shape
-            index_tip = hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP]
+            index_tip = hand_landmarks.landmark[hands.HandLandmark.INDEX_FINGER_TIP]
             finger_tip = (int(index_tip.x * w), int(index_tip.y * h))
             cv2.circle(image, finger_tip, 10, (0, 255, 0), cv2.FILLED)
 
