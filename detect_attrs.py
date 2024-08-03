@@ -111,6 +111,7 @@ while cap.isOpened():
             h, w, c = image.shape
             index_tip = hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP]
             finger_tip = (int(index_tip.x * w), int(index_tip.y * h))
+            print('the finger tip is currently at',finger_tip)
             cv2.circle(image, finger_tip, 10, (0, 255, 0), cv2.FILLED)
 
     touched_shape = None
