@@ -206,6 +206,12 @@ while cap.isOpened():
             # print('the finger tip is currently at',finger_tip)
             cv2.circle(image, finger_tip, 10, (0, 255, 0), cv2.FILLED)
 
+    # shadow detection
+    ret, frame = cap.read()
+
+    cv2.imshow("image before shadowmask", frame)
+    shadow_mask = detect_shadows(frame)
+
     touched_shape = None
     for shape_name, (cx, cy), color, area in calibrated_shapes:
         cv2.circle(image, (cx, cy), 5, (0, 255, 0), -1)
@@ -229,12 +235,6 @@ while cap.isOpened():
                 )
                 if distance < 30:  # Adjust this threshold as needed
                     touched_shape = shape_name
-
-    # shadow detection
-    ret, frame = cap.read()
-
-    cv2.imshow("image before shadowmask", frame)
-    shadow_mask = detect_shadows(frame)
 
     if finger_tip:
         distance = np.sqrt((finger_tip[0] - cx) ** 2 + (finger_tip[1] - cy) ** 2)
