@@ -2,38 +2,37 @@ import librosa
 import sounddevice as sd
 import time
 
-numOfIntervals = 10
-shapes = ["A", "B", "C"]
 
-shapeSteps = [5, 12 ,3]
+def create_pairs(shapes, num_bounding_boxes, shape_steps):
+    num_of_shapes = len(shapes)
 
-numOfShapes = len(shapes)
+    y, sr = librosa.load('short.mp3', sr=16000)
 
-y, sr = librosa.load('short.mp3', sr=16000)
+    pairs = {}
 
-pairs = {}
+    steps_per_interval = 0
 
-stepsPerInterval = 0
+    for i in range(num_of_shapes):
+        for j in range(num_of_shapes):
+            if shapes[i] != shapes[j]:  # Skip pairs like "AA", "BB", "CC"
+                
 
-for i in range(numOfShapes):
-    for j in range(numOfShapes):
-        if shapes[i] != shapes[j]:  # Skip pairs like "AA", "BB", "CC"
-            
+                steps_per_interval = (shape_steps[i]-shape_steps[j])/num_bounding_boxes
 
-            stepsPerInterval = (shapeSteps[i]-shapeSteps[j])/numOfIntervals
+                rainbow = []
+                for k in range(num_bounding_boxes):
+                    rainbow.append(librosa.effects.pitch_shift(y, sr=sr, n_steps=steps_per_interval*k))
+                
 
-            rainbow = []
-            for k in range(numOfIntervals):
-                rainbow.append(librosa.effects.pitch_shift(y, sr=sr, n_steps=stepsPerInterval*k))
-            
+                key = shapes[i] + shapes[j]
+                pairs[key] = rainbow
+    return pairs
 
-            key = shapes[i] + shapes[j]
-            pairs[key] = rainbow
+if __name__ == "__main__":
+    create_pairs(["A", "B", "C", "D"], 10, [5, 12, 3, 8])
 
-print(stepsPerInterval)
+# print(stepsPerInterval)
 
-for i in range(10):
-    sd.play(pairs["CB"][i], sr)
-    time.sleep(0.2)
-
-
+# for i in range(10):
+#     sd.play(pairs["CB"][i], sr)
+#     time.sleep(0.1)

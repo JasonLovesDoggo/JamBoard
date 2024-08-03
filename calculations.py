@@ -55,28 +55,3 @@ def check_if_finger_tip_is_in_bounding_box(finger_tip, bounding_box, bounding_bo
     return (finger_tip[0] >= bounding_box[0] - bounding_box_size and finger_tip[0] <= bounding_box[0] + bounding_box_size and
             finger_tip[1] >= bounding_box[1] - bounding_box_size and finger_tip[1] <= bounding_box[1] + bounding_box_size)
     
-
-if __name__ == "__main__":
-    points = {"A": (10,10), "B": (20,20), "C": (0, 0), "D": (9,40)}
-    finger_tip = (10,20)
-    starting_note = "A"
-    bounding_box_size = 2
-    num_bounding_boxes = 10
-    
-    nearest_line_connection = find_nearest_line_to_finger_tip(finger_tip, points, starting_note)
-    print(nearest_line_connection)
-    bounding_box_centers = create_bounding_box_centers(points[starting_note], points[nearest_line_connection], num_bounding_boxes)
-    
-    
-    selected_bounding_box = None
-    for i, bounding_box in enumerate(bounding_box_centers):
-        if check_if_finger_tip_is_in_bounding_box(finger_tip, bounding_box, bounding_box_size):
-            selected_bounding_box = bounding_box
-            break
-    
-    if selected_bounding_box is None:
-        print("Finger tip is not in bounding box")
-    else:
-        print("bounding box center:", selected_bounding_box)
-    
-    
