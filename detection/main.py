@@ -1,10 +1,12 @@
 import cv2
 import mediapipe as mp
+import numpy as np
 import sys
 from .hands import MediaPipeHands
 from .utils import calibrate, load_calibration
 from .types import ShapeData
 
+CURRENT_OBJECT: ShapeData | None = None
 
 # Initialize MediaPipe hands
 mp_hands = mp.solutions.hands
@@ -44,7 +46,6 @@ def start():
                 exit()
             calibrated_shapes = calibrate(frame, paper_roi)
 
-        last_touched_shape = None
         touch_cooldown = 0
         COOLDOWN_FRAMES = 15  # Adjust this value to change the cooldown period
 
@@ -83,7 +84,7 @@ def start():
                     )
 
                     # Get index fingertip coordinates
-                    h, w, c = image.shape
+                    h, w, _ = image.shape
                     index_tip = hand_landmarks.landmark[
                         mp_hands.HandLandmark.INDEX_FINGER_TIP
                     ]
@@ -106,15 +107,23 @@ def start():
                     2,
                 )
 
+            if finger_tip:
+                distance = np.sqrt(
+                    (finger_tip[0] - cx) ** 2 + (finger_tip[1] - cy) ** 2
+                )
+                if distance < 30:
+                    touched_shape = (shape_name, (cx, cy), color, area)
+
             if touched_shape:
                 if touch_cooldown == 0:
                     shape_name, (cx, cy), color, area = touched_shape
-                    data = ShapeData(
+                    CURRENT_OBJECT = ShapeData(
                         size=area, color=color, center=(cx, cy), name=shape_name
                     )
-                    print(f"Touched: {data}")
+                    print(f"Touched: {CURRENT_OBJECT}")
                     touch_cooldown = COOLDOWN_FRAMES
-
+            else:
+                CURRENT_OBJECT = None
             if touch_cooldown > 0:
                 touch_cooldown -= 1
 
