@@ -119,7 +119,7 @@ drawing_utils = hands_instance.drawing_utils
 
 if sys.platform == 'darwin': # Mac
     cap = cv2.VideoCapture(0)
-elif sys.platform == 'win32': # Windows
+elif sys.platform in ['win32','win64']: # Windows
       cap = cv2.VideoCapture(1, cv2.CAP_DSHOW)
 else:
     cap = cv2.VideoCapture(0)
