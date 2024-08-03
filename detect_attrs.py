@@ -82,6 +82,30 @@ def calibrate(frame, paper_roi):
     print(f"Calibration complete. Detected {len(shapes)} shapes.")
     return shapes
 
+# Detect shadows
+# Converts frame --> grayscale, apply gaussian blur, create shadow mask
+def detect_shadows(frame):
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+    shadow_mask = cv2.adaptiveThreshold(blurred, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 11, 0)
+    cv2.imshow("shadow mask", shadow_mask)
+    return shadow_mask
+
+# Check shadows around fingertip to see if they meet threshold
+# (given overhead lighting, less visible shadow means it's closer to the paper)
+def is_fingertip_touching(cx, cy, shadow_mask, threshold=0.5):
+    neighborhood = shadow_mask[cy-2:cy+2, cx-2:cx+2]
+    # cv2.imshow("neighborhood", neighborhood)
+    shadow_pixels = cv2.countNonZero(neighborhood)
+    total_pixels = neighborhood.size
+    # division by zero ... means that total_pixels is zero
+    # why is total pixels zero
+    return shadow_pixels / total_pixels < threshold
+
+# Initialize MediaPipe hands
+mp_hands = mp.solutions.hands
+hands = mp_hands.Hands(static_image_mode=False, max_num_hands=1, min_detection_confidence=0.5)
+mp_drawing = mp.solutions.drawing_utils
 def load_calibration():
     if os.path.exists(CALIBRATION_PATH):
         with open(CALIBRATION_PATH, 'rb') as f:
@@ -96,7 +120,7 @@ drawing_utils = hands_instance.drawing_utils
 
 if sys.platform == 'darwin': # Mac
     cap = cv2.VideoCapture(0)
-elif sys.platform == 'win32': # Windows
+elif sys.platform in ['win32','win64']: # Windows
       cap = cv2.VideoCapture(1, cv2.CAP_DSHOW)
 else:
     cap = cv2.VideoCapture(0)
@@ -151,17 +175,33 @@ while cap.isOpened():
             h, w, c = image.shape
             index_tip = hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP]
             finger_tip = (int(index_tip.x * w), int(index_tip.y * h))
+            # print('the finger tip is currently at',finger_tip)
             cv2.circle(image, finger_tip, 10, (0, 255, 0), cv2.FILLED)
 
     touched_shape = None
     for shape_name, (cx, cy), color, area in calibrated_shapes:
         cv2.circle(image, (cx, cy), 5, (0, 255, 0), -1)
         cv2.putText(image, shape_name, (cx + 10, cy), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
-
+        
+        # distance is how close you are to the centerpoint
         if finger_tip:
-            distance = np.sqrt((finger_tip[0] - cx) ** 2 + (finger_tip[1] - cy) ** 2)
-            if distance < 30:
-                touched_shape = (shape_name, (cx, cy), color, area)
+            # finger tip is a tuple (x,y) of where the finger is right now
+            # shadow mask is the image but highlights the shadows
+            if is_fingertip_touching(finger_tip[0], finger_tip[1], shadow_mask):
+                distance = np.sqrt((finger_tip[0] - cx)**2 + (finger_tip[1] - cy)**2)
+                if distance < 30:  # Adjust this threshold as needed
+                    touched_shape = shape_name
+
+    # shadow detection
+    ret, frame = cap.read()
+
+    cv2.imshow("image before shadowmask", frame)
+    shadow_mask = detect_shadows(frame)
+
+    if finger_tip:
+        distance = np.sqrt((finger_tip[0] - cx) ** 2 + (finger_tip[1] - cy) ** 2)
+        if distance < 30:
+            touched_shape = (shape_name, (cx, cy), color, area)
 
     if touched_shape:
         if touch_cooldown == 0:
