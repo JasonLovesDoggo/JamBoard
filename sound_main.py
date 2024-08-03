@@ -16,7 +16,7 @@ def main():
     shape_steps = [-5,-12,-3,-8]
     shape_steps = [0 for i in range(4)]
     
-    pygame.mixer.pre_init(channels=1, allowedchanges=0)
+    pygame.mixer.pre_init(frequency = 16000, channels=1, allowedchanges=0)
     pygame.init()
     pygame.mixer.init()
     
