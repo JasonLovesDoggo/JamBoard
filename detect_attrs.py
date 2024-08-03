@@ -87,7 +87,7 @@ def calibrate(frame, paper_roi):
 def detect_shadows(frame):
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     blurred = cv2.GaussianBlur(gray, (5, 5), 0)
-    _, shadow_mask = cv2.threshold(blurred, 60, 255, cv2.THRESH_BINARY_INV)  # Adjust threshold value as needed
+    shadow_mask = cv2.adaptiveThreshold(blurred, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 11, 0)
     cv2.imshow("shadow mask", shadow_mask)
     return shadow_mask
 
@@ -192,8 +192,10 @@ while cap.isOpened():
                     touched_shape = shape_name
 
     # shadow detection
-    cv2.imshow("image", image)
-    shadow_mask = detect_shadows(image)
+    ret, frame = cap.read()
+
+    cv2.imshow("image before shadowmask", frame)
+    shadow_mask = detect_shadows(frame)
 
     if finger_tip:
         distance = np.sqrt((finger_tip[0] - cx) ** 2 + (finger_tip[1] - cy) ** 2)
