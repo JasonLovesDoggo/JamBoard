@@ -34,7 +34,7 @@ def calibrate(frame, paper_roi):
         pickle.dump(shapes, f)
 
     print(f"Calibration complete. Detected {len(shapes)} shapes.")
-    return shapes
+    return shapes   
 
 
 def load_calibration():
