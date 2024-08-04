@@ -3,7 +3,10 @@ import pickle
 import os
 from .shape_utils import get_shape_name, get_dominant_color
 from .constants import CALIBRATION_PATH
+from .types import ShapeData
+from typing import List
 
+shapes_objects: List[ShapeData]
 
 def calibrate(frame, paper_roi):
     paper_area = frame[paper_roi[1] : paper_roi[3], paper_roi[0] : paper_roi[2]]
@@ -29,6 +32,7 @@ def calibrate(frame, paper_roi):
             color = get_dominant_color(paper_area, contour)
             area = cv2.contourArea(contour)
             shapes.append((shape_name, (cx, cy), color, area))
+            shapes_objects.append(ShapeData(name=shape_name, area=area, color=color, center=(cx, cy,)))
 
     with open(CALIBRATION_PATH, "wb") as f:
         pickle.dump(shapes, f)
