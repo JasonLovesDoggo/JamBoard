@@ -56,10 +56,10 @@ def main_loop(cap_top, cap_side, hands, drawing_utils, paper_roi):
             print("Ignoring empty camera frame.")
             continue
 
-        image, CURRENT_OBJECT, finger_pos = process_frame(
+        image, CURRENT_OBJECT, _ = process_frame(
             hands, mp_hands, drawing_utils, image, paper_roi, calibrated_shapes
         )
-        cv2.imshow("Shapes2", image)
+        # cv2.imshow("Shapes2", image) # debug prints
         
         # print(f"Current finger position: {finger_pos}")
             
