@@ -9,66 +9,72 @@ import math
 from detection.types import ShapeData
 
 shapes_objects = [
-    ShapeData(size=1221.0, color=(126, 109, 97), center=(306, 218), name='Circle'), 
-    ShapeData(size=2136.5, color=(96, 90, 116), center=(259, 173), name='Rectangle'),
-    ShapeData(size=1000, color=(255, 14, 85), center=(320,320), name='Rectangle'),
-    ShapeData(size=1000, color=(0,0,0), center=(50,50), name='Rectangle'), 
-    ShapeData(size=2136.5, color=(96, 90, 116), center=(259, 173), name='Triangle'),
-    ShapeData(size=1000, color=(255, 14, 85), center=(320,320), name='Triangle'),
-    ShapeData(size=1000, color=(0,0,0), center=(50,50), name='Triangle'), 
-    ShapeData(size=1794.5, color=(39, 32, 38), center=(364, 299), name='Hexagon')
+    ShapeData(size=1221.0, color=(126, 109, 97), center=(306, 218), name="Circle"),
+    ShapeData(size=2136.5, color=(96, 90, 116), center=(259, 173), name="Rectangle"),
+    ShapeData(size=1000, color=(255, 14, 85), center=(320, 320), name="Rectangle"),
+    ShapeData(size=1000, color=(0, 0, 0), center=(50, 50), name="Rectangle"),
+    ShapeData(size=2136.5, color=(96, 90, 116), center=(259, 173), name="Triangle"),
+    ShapeData(size=1000, color=(255, 14, 85), center=(320, 320), name="Triangle"),
+    ShapeData(size=1000, color=(0, 0, 0), center=(50, 50), name="Triangle"),
+    ShapeData(size=1794.5, color=(39, 32, 38), center=(364, 299), name="Hexagon"),
 ]
 
 colors = [
-    
     ("black", (0, 0, 0)),
     ("red", (255, 0, 0)),
     ("purple", (128, 0, 128)),
     ("green", (0, 128, 0)),
     ("yellow", (255, 255, 0)),
     ("blue", (0, 0, 255)),
-    ("orange", (255,165,0))
+    ("orange", (255, 165, 0)),
 ]
 
 color_mapping = {
-    "red": 0, #C 0 steps away since base note is a C
-    "orange": 2, #D
-    "yellow": 4, #E
-    "green": 5, #F
-    "blue": 7, #G
-    "purple": 9, #A
-    "black": 11, #B
+    "red": 0,  # C 0 steps away since base note is a C
+    "orange": 2,  # D
+    "yellow": 4,  # E
+    "green": 5,  # F
+    "blue": 7,  # G
+    "purple": 9,  # A
+    "black": 11,  # B
 }
 
 
-def distance(a,b):
-    dx = a[0]-b[0]
-    dy = a[1]-b[1]
-    dz = a[2]-b[2]
-    return math.sqrt(dx*dx+dy*dy+dz*dz)
+def distance(a, b):
+    dx = a[0] - b[0]
+    dy = a[1] - b[1]
+    dz = a[2] - b[2]
+    return math.sqrt(dx * dx + dy * dy + dz * dz)
+
 
 def findclosest(input_color):
     mn = 999999
-    for name,rgb in colors:
+    for name, rgb in colors:
         d = distance(input_color, rgb)
         if d < mn:
             mn = d
             color = name
     return color
 
+
 def populate_shapes_formatted(shapes_objects):
     shapes_formatted = {}
     for shape in shapes_objects:
         if shape.name in shapes_formatted:
-            shapes_formatted[shape.name].append({'center': shape.center, 'color': shape.color, 'size': shape.size})
+            shapes_formatted[shape.name].append(
+                {"center": shape.center, "color": shape.color, "size": shape.size}
+            )
         else:
-            shapes_formatted[shape.name] = [{'center': shape.center, 'color': shape.color, 'size': shape.size}]
+            shapes_formatted[shape.name] = [
+                {"center": shape.center, "color": shape.color, "size": shape.size}
+            ]
     return shapes_formatted
+
 
 def main():
     # Pre Click Data, can be placed in calibration stage
     shapes_formatted = populate_shapes_formatted(shapes_objects)
-    
+
     bounding_box_size = 50
     num_bounding_boxes = 8
     # shape_steps = [0 for i in range(4)]
@@ -79,18 +85,19 @@ def main():
 
     pairs_dict = {}
     for shape in shapes_formatted.keys():
-        pairs = create_pairs(shapes_formatted[shape], num_bounding_boxes, shape)   
+        pairs = create_pairs(shapes_formatted[shape], num_bounding_boxes, shape)
         pairs_dict[shape] = pairs
-        
-        
-    #after click
-    
-    starting_note_info = ShapeData(size=1000, color=(0,0,0), center=(50,50), name='Rectangle')
+
+    # after click
+
+    starting_note_info = ShapeData(
+        size=1000, color=(0, 0, 0), center=(50, 50), name="Rectangle"
+    )
     finger_tip = (150, 120)
-    
+
     points = []
     for i in shapes_formatted[starting_note_info.name]:
-        points.append(i['center'])
+        points.append(i["center"])
     nearest_line_connection = find_nearest_line_to_finger_tip(
         finger_tip, points, starting_note_info
     )
@@ -114,7 +121,9 @@ def main():
         prev_channel = None
 
         for i in range(10):
-            for pair in pairs_dict[starting_note_info.name][starting_note_info.center + nearest_line_connection]:
+            for pair in pairs_dict[starting_note_info.name][
+                starting_note_info.center + nearest_line_connection
+            ]:
                 channel = pair.play()
                 time.sleep(0.05)
                 if prev_channel is not None:
@@ -123,7 +132,9 @@ def main():
 
                 prev_channel = channel
 
-            for pair in pairs_dict[starting_note_info.name][starting_note_info.center + nearest_line_connection][::-1]:
+            for pair in pairs_dict[starting_note_info.name][
+                starting_note_info.center + nearest_line_connection
+            ][::-1]:
                 channel = pair.play()
                 time.sleep(0.05)
                 if prev_channel is not None:

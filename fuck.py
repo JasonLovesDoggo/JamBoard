@@ -11,23 +11,25 @@ instrument_mapping = {
     "Pentagon": "piano",
     "Hexagon": "piano",
 }
-    
+
+
 def create_frequency(area):
     threshold = 50
     factor = 2
     edge_approx = int(np.sqrt(area))
     return int((edge_approx - threshold) / factor)
 
+
 def create_pairs(shapes, num_bounding_boxes, shape_name):
     pygame.mixer.pre_init(channels=1, allowedchanges=0)
     pygame.init()
     pygame.mixer.init()
-    
+
     if shape_name == "Circle":
         num_bounding_boxes = 2
-        shapes_steps = [0,0]
+        shapes_steps = [0, 0]
     else:
-        shape_steps = [create_frequency(shape['size']) for shape in shapes]
+        shape_steps = [create_frequency(shape["size"]) for shape in shapes]
 
     num_of_shapes = len(shapes)
 
@@ -39,10 +41,12 @@ def create_pairs(shapes, num_bounding_boxes, shape_name):
 
     for i in range(num_of_shapes):
         for j in range(num_of_shapes):
-            if shapes[i]['center'] != shapes[j]['center']:  # Skip pairs like "AA", "BB", "CC"
-                steps_per_interval = (
-                    shape_steps[i] - shape_steps[j]
-                ) / (num_bounding_boxes-1)
+            if (
+                shapes[i]["center"] != shapes[j]["center"]
+            ):  # Skip pairs like "AA", "BB", "CC"
+                steps_per_interval = (shape_steps[i] - shape_steps[j]) / (
+                    num_bounding_boxes - 1
+                )
 
                 rainbow = []
                 for k in range(num_bounding_boxes):
@@ -57,7 +61,7 @@ def create_pairs(shapes, num_bounding_boxes, shape_name):
                     # time.sleep(1)
                     rainbow.append(pygame.sndarray.make_sound(a))
 
-                key = shapes[i]['center'] + shapes[j]['center']
+                key = shapes[i]["center"] + shapes[j]["center"]
                 pairs[key] = rainbow
     return pairs
 

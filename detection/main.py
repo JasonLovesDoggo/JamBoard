@@ -28,6 +28,11 @@ def main_loop(cap_top, cap_side, hands, drawing_utils, paper_roi):
             exit()
         calibrated_shapes = calibrate(frame, paper_roi)
 
+    tapped = False  # Flag to track tapping state
+    current_finger_position = (
+        None  # Variable to store current position of the index finger
+    )
+
     while cap_top.isOpened() and cap_side.isOpened():
         success, image = cap_top.read()
         if not success:
@@ -38,11 +43,25 @@ def main_loop(cap_top, cap_side, hands, drawing_utils, paper_roi):
             hands, mp_hands, drawing_utils, image, paper_roi, calibrated_shapes
         )
 
-        # if CURRENT_OBJECT:
-            # print(f"Hovering over: {CURRENT_OBJECT}")
-
-        if is_tapped(cap_side) and CURRENT_OBJECT is not None:
-            print(f"Tapped on: {CURRENT_OBJECT}")
+        results = hands.process(image)
+        # Continuously update the current position of the index finger
+        if results.multi_hand_landmarks:
+            print(len(results.multi_hand_landmarks))
+            index_finger_tip = results.multi_hand_landmarks[0].landmark[
+                    mp_hands.HandLandmark.INDEX_FINGER_TIP
+                ]
+            current_finger_position = (
+                    index_finger_tip.x * image.shape[1],
+                    index_finger_tip.y * image.shape[0],
+                )
+            print(f"Current finger position: {current_finger_position}")
+        if is_tapped(cap_side):
+            if CURRENT_OBJECT is not None:  # Ensure there is a current object
+                if not tapped:
+                    print(f"Tapped on: {CURRENT_OBJECT}")
+                    tapped = True  # Set the flag to indicate tapping detected
+        else:
+            tapped = False  # Reset the flag when tapping is no longer detected
 
         cv2.imshow("Shapes and Hand Detection", image)
 

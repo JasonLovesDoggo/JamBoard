@@ -13,11 +13,11 @@ def get_shape_name(approx, contour):
     if len(approx) == 3:
         return "Triangle"
     elif len(approx) == 4:
-        # Commented out logic is for detecting squares instead of rectangles (but since we're using both as one instrument, we'll just call them rectangles) 
+        # Commented out logic is for detecting squares instead of rectangles (but since we're using both as one instrument, we'll just call them rectangles)
         # _, _, w, h = cv2.boundingRect(approx)
         # aspect_ratio = float(w) / h
         # if 0.95 <= aspect_ratio <= 1.05:
-            # return "Square"
+        # return "Square"
         # else:
         return "Rectangle"
     elif 0.7 <= circularity:
