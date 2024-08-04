@@ -3,7 +3,10 @@ import pickle
 import os
 from .shape_utils import get_shape_name, get_dominant_color
 from .constants import CALIBRATION_PATH
+from .types import ShapeData
+from typing import List
 
+shapes_objects: List[ShapeData]
 
 def calibrate(frame, paper_roi):
     paper_area = frame[paper_roi[1] : paper_roi[3], paper_roi[0] : paper_roi[2]]
@@ -29,12 +32,13 @@ def calibrate(frame, paper_roi):
             color = get_dominant_color(paper_area, contour)
             area = cv2.contourArea(contour)
             shapes.append((shape_name, (cx, cy), color, area))
+            shapes_objects.append(ShapeData(name=shape_name, area=area, color=color, center=(cx, cy,)))
 
     with open(CALIBRATION_PATH, "wb") as f:
         pickle.dump(shapes, f)
 
     print(f"Calibration complete. Detected {len(shapes)} shapes.")
-    return shapes
+    return shapes   
 
 
 def load_calibration():
@@ -42,3 +46,9 @@ def load_calibration():
         with open(CALIBRATION_PATH, "rb") as f:
             return pickle.load(f)
         return None
+
+
+    # Iterate through detected hands and check if the finger is pressed
+    # for hand_landmarks in results.multi_hand_landmarks:
+    #     if finger_is_pressed(hand_landmarks, threshold):
+    #         return True

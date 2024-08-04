@@ -10,7 +10,7 @@ def get_shape_name(approx, contour):
     if len(approx) == 3:
         return "Triangle"
     elif len(approx) == 4:
-        x, y, w, h = cv2.boundingRect(approx)
+        _, _, w, h = cv2.boundingRect(approx)
         aspect_ratio = float(w) / h
         if 0.95 <= aspect_ratio <= 1.05:
             return "Square"
