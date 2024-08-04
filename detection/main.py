@@ -56,21 +56,14 @@ def main_loop(cap_top, cap_side, hands, drawing_utils, paper_roi):
             print("Ignoring empty camera frame.")
             continue
 
-        image, CURRENT_OBJECT = process_frame(
+        image, CURRENT_OBJECT, finger_pos = process_frame(
             hands, mp_hands, drawing_utils, image, paper_roi, calibrated_shapes
         )
-
-        results = hands.process(image)
-        # Continuously update the current position of the index finger
-        if results.multi_hand_landmarks:
-            index_finger_tip = results.multi_hand_landmarks[0].landmark[
-                mp_hands.HandLandmark.INDEX_FINGER_TIP
-            ]
-            current_finger_position = (
-                index_finger_tip.x * image.shape[1],
-                index_finger_tip.y * image.shape[0],
-            )
-            print(f"Current finger position: {current_finger_position}")
+        cv2.imshow("Shapes2", image)
+        
+        print(f"Current finger position: {finger_pos}")
+            
+            
         if is_tapped(cap_side):
             if CURRENT_OBJECT is not None:  # Ensure there is a current object
                 if not tapped:

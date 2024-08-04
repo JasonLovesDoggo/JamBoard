@@ -93,7 +93,7 @@ def process_frame(hands, mp_hands, drawing_utils, image, paper_roi, calibrated_s
                 break
 
     draw_shapes_and_hover(image, calibrated_shapes)
-    return image, CURRENT_OBJECT
+    return image, CURRENT_OBJECT, finger_tip
 
 
 def draw_shapes_and_hover(image, calibrated_shapes):
