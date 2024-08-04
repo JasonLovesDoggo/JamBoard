@@ -10,7 +10,7 @@ X_DIST_THRESHOLD = (
     0.70  # if user is in bottom (1 - x)% of the image, then they are tapping
 )
 CALIBRATION_PATH = "calibration.pkl"
-CHANGE_THRESHOLD = 3300
+CHANGE_THRESHOLD = 3000
 
 # Initialize the background subtractor
 bg_subtractor = cv2.createBackgroundSubtractorMOG2(detectShadows=True)
@@ -123,7 +123,7 @@ def is_tapped(cap_side, calibration_path=CALIBRATION_PATH) -> bool:
     # Threshold the combined difference
     _, thresh_diff = cv2.threshold(combined_diff, 30, 255, cv2.THRESH_BINARY)
     non_zero_count = cv2.countNonZero(thresh_diff)
-    # print(f"Non-zero count: {non_zero_count}")
+    print(f"Non-zero count: {non_zero_count}")
 
     cv2.imshow("Frame", frame)
     # If there are significant changes, detect a touch

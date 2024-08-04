@@ -42,8 +42,8 @@ def findclosest(input_color):
 
 
 def create_frequency(area):
-    threshold = 50
-    factor = 15
+    threshold = 60
+    factor = 10
     edge_approx = int(np.sqrt(area))
     return int((edge_approx - threshold) / factor)
 

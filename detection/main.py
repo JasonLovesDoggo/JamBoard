@@ -32,7 +32,7 @@ def main_loop(cap_top, cap_side, hands, drawing_utils, paper_roi):
             cap_top.release()
             cv2.destroyAllWindows()
             exit()
-        calibrated_shapes = calibrate(frame, paper_roi)
+        calibrated_shapes = calibrate(frame, paper_roi, cap_side=cap_side)
     _, frame = cap_top.read()
     calibrated_shapes = calibrate(frame, paper_roi, cap_side=cap_side)
 
@@ -42,7 +42,7 @@ def main_loop(cap_top, cap_side, hands, drawing_utils, paper_roi):
     )
 
     
-    bounding_box_size = 75
+    bounding_box_size = 100
     num_bounding_boxes = 8 # also mentioned at the bottom of callibrate 
     # shape_steps = [0 for i in range(4)]
 
@@ -61,7 +61,7 @@ def main_loop(cap_top, cap_side, hands, drawing_utils, paper_roi):
         )
         cv2.imshow("Shapes2", image)
         
-        print(f"Current finger position: {finger_pos}")
+        # print(f"Current finger position: {finger_pos}")
             
             
         if is_tapped(cap_side):
