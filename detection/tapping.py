@@ -1,6 +1,10 @@
 import cv2
 import pickle
 import numpy as np
+from collections import deque
+from .constants import *
+from typing import MutableSequence
+import time
 
 X_DIST_THRESHOLD = (
     0.70  # if user is in bottom (1 - x)% of the image, then they are tapping
@@ -14,6 +18,10 @@ bg_subtractor = cv2.createBackgroundSubtractorMOG2(detectShadows=True)
 # Define skin tone range in HSV
 LOWER_SKIN = np.array([0, 10, 60], dtype = "uint8") 
 UPPER_SKIN = np.array([20, 150, 255], dtype = "uint8")
+
+recent_positives: deque[float] = deque(maxlen=POSITIVE_COUNT_THRESHOLD)
+
+
 
 
 def calibrate_touch(cap_side, calibration_path=CALIBRATION_PATH):
@@ -38,7 +46,14 @@ def calibrate_touch(cap_side, calibration_path=CALIBRATION_PATH):
 
 
 def is_tapped(cap_side, calibration_path=CALIBRATION_PATH) -> bool:
+    global recent_positives
     "Detect if a finger is touching a surface from the pov of a camera that's on the floor looking sideways at the surface."
+    current_time = time.time()
+    
+    # Remove old positives outside the time window
+    while recent_positives and current_time - recent_positives[0] > TIME_WINDOW:
+        recent_positives.popleft()
+    
     ret, frame = cap_side.read()
     if not ret:
         print("Failed to capture frame. Exiting.")
@@ -114,7 +129,9 @@ def is_tapped(cap_side, calibration_path=CALIBRATION_PATH) -> bool:
 
     # If there are significant changes, detect a touch
     if non_zero_count > CHANGE_THRESHOLD:  # Adjust this threshold as needed
-        return True
+        recent_positives.append(current_time)
+        if len(recent_positives) >= POSITIVE_COUNT_THRESHOLD:
+            return True
 
     cv2.imshow("Frame", frame)
     return False

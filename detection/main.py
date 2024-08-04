@@ -38,12 +38,11 @@ def main_loop(cap_top, cap_side, hands, drawing_utils, paper_roi):
             hands, mp_hands, drawing_utils, image, paper_roi, calibrated_shapes
         )
 
-        if CURRENT_OBJECT:
-            print(f"Hovering over: {CURRENT_OBJECT}")
+        # if CURRENT_OBJECT:
+            # print(f"Hovering over: {CURRENT_OBJECT}")
 
-        if is_tapped(cap_side):
-            print(f"Tapped")
-            # todo call music engine.
+        if is_tapped(cap_side) and CURRENT_OBJECT is not None:
+            print(f"Tapped on: {CURRENT_OBJECT}")
 
         cv2.imshow("Shapes and Hand Detection", image)
 
