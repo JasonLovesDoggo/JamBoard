@@ -1,1 +1,1 @@
-frequency = 44100
+    shape_steps = [0 for i in range(4)]
