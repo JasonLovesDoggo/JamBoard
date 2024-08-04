@@ -123,7 +123,7 @@ def is_tapped(cap_side, calibration_path=CALIBRATION_PATH) -> bool:
     # Threshold the combined difference
     _, thresh_diff = cv2.threshold(combined_diff, 30, 255, cv2.THRESH_BINARY)
     non_zero_count = cv2.countNonZero(thresh_diff)
-    print(f"Non-zero count: {non_zero_count}")
+    # print(f"Non-zero count: {non_zero_count}") debug tapping.
 
     cv2.imshow("Frame", frame)
     # If there are significant changes, detect a touch

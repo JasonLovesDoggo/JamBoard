@@ -7,8 +7,7 @@ from .constants import *
 from .types import ShapeData
 from typing import List
 from .tapping import calibrate_touch
-from .sound_main import findclosest
-from .pairs import create_pairs
+from .sound_main import findclosest, create_pairs
 
 shapes_formatted: dict = {}
 pairs_grouping: dict = {}
