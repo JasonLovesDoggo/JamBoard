@@ -9,6 +9,8 @@ from typing import List
 shapes_objects: List[ShapeData]
 
 def calibrate(frame, paper_roi):
+    global shapes_objects
+    shapes_objects = []
     paper_area = frame[paper_roi[1] : paper_roi[3], paper_roi[0] : paper_roi[2]]
     gray = cv2.cvtColor(paper_area, cv2.COLOR_BGR2GRAY)
     blurred = cv2.GaussianBlur(gray, (5, 5), 0)
