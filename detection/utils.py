@@ -8,12 +8,12 @@ from .types import ShapeData
 from typing import List
 from .tapping import calibrate_touch
 
-shapes_objects: List[ShapeData]
+shapes_objects: List[ShapeData] = []
 
 
 def calibrate(frame, paper_roi, /, cap_side):
     global shapes_objects
-    shapes_objects = []
+    shapes_objects.clear() # Clear the list of shapes
     paper_area = frame[paper_roi[1] : paper_roi[3], paper_roi[0] : paper_roi[2]]
     gray = cv2.cvtColor(paper_area, cv2.COLOR_BGR2GRAY)
     blurred = cv2.GaussianBlur(gray, (5, 5), 0)
@@ -30,6 +30,7 @@ def calibrate(frame, paper_roi, /, cap_side):
 
         approx = cv2.approxPolyDP(contour, 0.04 * cv2.arcLength(contour, True), True)
         shape_name = get_shape_name(approx, contour)
+        print(shape_name)
         M = cv2.moments(contour)
         if M["m00"] != 0.0:
             cx = int(M["m10"] / M["m00"]) + paper_roi[0]
