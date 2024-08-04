@@ -1,8 +1,9 @@
 import cv2
 import pickle
 import os
+import sys
 from .shape_utils import get_shape_name, get_dominant_color
-from .constants import CALIBRATION_PATH
+from .constants import *
 from .types import ShapeData
 from typing import List
 
@@ -34,13 +35,14 @@ def calibrate(frame, paper_roi):
             color = get_dominant_color(paper_area, contour)
             area = cv2.contourArea(contour)
             shapes.append((shape_name, (cx, cy), color, area))
-            shapes_objects.append(ShapeData(name=shape_name, area=area, color=color, center=(cx, cy,)))
+            shapes_objects.append(ShapeData(name=shape_name, size=area, color=color, center=(cx, cy,)))
 
     with open(CALIBRATION_PATH, "wb") as f:
         pickle.dump(shapes, f)
 
     print(f"Calibration complete. Detected {len(shapes)} shapes.")
-    return shapes   
+    # print(f'{shapes_objects=}')
+    return shapes
 
 
 def load_calibration():
@@ -49,8 +51,27 @@ def load_calibration():
             return pickle.load(f)
         return None
 
-
     # Iterate through detected hands and check if the finger is pressed
     # for hand_landmarks in results.multi_hand_landmarks:
     #     if finger_is_pressed(hand_landmarks, threshold):
     #         return True
+
+
+
+def initialize_video_captures():
+    if sys.platform == "darwin":  # Mac
+        return cv2.VideoCapture(TOP_CAM), cv2.VideoCapture(SIDE_CAM)
+    elif sys.platform in ["win32", "win64"]:  # Windows
+        return cv2.VideoCapture(TOP_CAM, cv2.CAP_DSHOW), cv2.VideoCapture(SIDE_CAM, cv2.CAP_DSHOW)
+    else:
+        return cv2.VideoCapture(TOP_CAM), cv2.VideoCapture(SIDE_CAM)
+
+    
+    
+def check_video_capture(cap_top, cap_side):
+    if not cap_top.isOpened():
+        print("Error: Could not open top webcam.")
+        exit()
+    if not cap_side.isOpened():
+        print("Error: Could not open side webcam.")
+        exit()

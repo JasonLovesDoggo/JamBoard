@@ -77,7 +77,7 @@ def main():
     
     starting_note_info = ShapeData(size=1000, color=(255, 14, 85), center=(320,320), name='Rectangle')
     points = {"A": (10, 10), "B": (20, 20), "C": (0, 0), "D": (9, 40)}
-    finger_tip = (20,20)
+    finger_tip = (20, 20)
     starting_note = "A"
     bounding_box_size = 2
     num_bounding_boxes = 8
@@ -119,9 +119,9 @@ def main():
                 if prev_channel is not None:
                     prev_channel.stop()
                 time.sleep(1)  # Adjust the sleep duration as needed
-                
+
                 prev_channel = channel
-                
+
             for pair in pairs[starting_note + nearest_line_connection][::-1]:
                 channel = pair.play()
                 time.sleep(0.05)
