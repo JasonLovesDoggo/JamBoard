@@ -2,13 +2,18 @@ import cv2
 import mediapipe as mp
 from .shape_utils import process_frame
 from .hands import MediaPipeHands
-from .utils import load_calibration, calibrate, initialize_video_captures, check_video_capture
-from .types import ShapeData
-
-CURRENT_OBJECT: ShapeData | None = None
+from .utils import (
+    load_calibration,
+    calibrate,
+    initialize_video_captures,
+    check_video_capture,
+)
+from .tapping import is_tapped
 
 mp_hands = mp.solutions.hands
-hands = mp_hands.Hands(static_image_mode=False, max_num_hands=1, min_detection_confidence=0.5)
+hands = mp_hands.Hands(
+    static_image_mode=False, max_num_hands=1, min_detection_confidence=0.5
+)
 mp_drawing = mp.solutions.drawing_utils
 
 
@@ -29,10 +34,16 @@ def main_loop(cap_top, cap_side, hands, drawing_utils, paper_roi):
             print("Ignoring empty camera frame.")
             continue
 
-        image = process_frame(hands, mp_hands, drawing_utils, image, paper_roi, calibrated_shapes)
+        image, CURRENT_OBJECT = process_frame(
+            hands, mp_hands, drawing_utils, image, paper_roi, calibrated_shapes
+        )
 
         if CURRENT_OBJECT:
             print(f"Hovering over: {CURRENT_OBJECT}")
+
+        if is_tapped(cap_side):
+            print(f"Tapped")
+            # todo call music engine.
 
         cv2.imshow("Shapes and Hand Detection", image)
 
@@ -42,7 +53,8 @@ def main_loop(cap_top, cap_side, hands, drawing_utils, paper_roi):
         elif key == ord("c"):
             print("Recalibrating...")
             _, frame = cap_top.read()
-            calibrated_shapes = calibrate(frame, paper_roi)
+            calibrated_shapes = calibrate(frame, paper_roi, cap_side=cap_side)
+
 
 def start():
     hands_instance = MediaPipeHands()
@@ -61,6 +73,7 @@ def start():
         hands.close()
         cap_top.release()
         cv2.destroyAllWindows()
+
 
 if __name__ == "__main__":
     print("Starting...")

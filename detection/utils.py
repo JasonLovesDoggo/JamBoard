@@ -6,10 +6,12 @@ from .shape_utils import get_shape_name, get_dominant_color
 from .constants import *
 from .types import ShapeData
 from typing import List
+from .tapping import calibrate_touch
 
 shapes_objects: List[ShapeData]
 
-def calibrate(frame, paper_roi):
+
+def calibrate(frame, paper_roi, /, cap_side):
     global shapes_objects
     shapes_objects = []
     paper_area = frame[paper_roi[1] : paper_roi[3], paper_roi[0] : paper_roi[2]]
@@ -35,13 +37,24 @@ def calibrate(frame, paper_roi):
             color = get_dominant_color(paper_area, contour)
             area = cv2.contourArea(contour)
             shapes.append((shape_name, (cx, cy), color, area))
-            shapes_objects.append(ShapeData(name=shape_name, size=area, color=color, center=(cx, cy,)))
+            shapes_objects.append(
+                ShapeData(
+                    name=shape_name,
+                    size=area,
+                    color=color,
+                    center=(
+                        cx,
+                        cy,
+                    ),
+                )
+            )
 
     with open(CALIBRATION_PATH, "wb") as f:
         pickle.dump(shapes, f)
 
     print(f"Calibration complete. Detected {len(shapes)} shapes.")
     # print(f'{shapes_objects=}')
+    calibrate_touch(cap_side=cap_side)
     return shapes
 
 
@@ -57,17 +70,17 @@ def load_calibration():
     #         return True
 
 
-
 def initialize_video_captures():
     if sys.platform == "darwin":  # Mac
         return cv2.VideoCapture(TOP_CAM), cv2.VideoCapture(SIDE_CAM)
     elif sys.platform in ["win32", "win64"]:  # Windows
-        return cv2.VideoCapture(TOP_CAM, cv2.CAP_DSHOW), cv2.VideoCapture(SIDE_CAM, cv2.CAP_DSHOW)
+        return cv2.VideoCapture(TOP_CAM, cv2.CAP_DSHOW), cv2.VideoCapture(
+            SIDE_CAM, cv2.CAP_DSHOW
+        )
     else:
         return cv2.VideoCapture(TOP_CAM), cv2.VideoCapture(SIDE_CAM)
 
-    
-    
+
 def check_video_capture(cap_top, cap_side):
     if not cap_top.isOpened():
         print("Error: Could not open top webcam.")
