@@ -14,7 +14,7 @@ def main():
     starting_note = "A"
     bounding_box_size = 2
     num_bounding_boxes = 8
-    shape_steps = [0, -34, -3, -8]
+    shape_steps = [0, 12, -3, -8]
     # shape_steps = [0 for i in range(4)]
 
     pygame.mixer.pre_init(frequency=16000, channels=1, allowedchanges=0)
