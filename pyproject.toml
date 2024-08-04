@@ -12,6 +12,8 @@ python = "^3.12"
 opencv-python = "^4.10.0.84"
 matplotlib = "^3.9.1"
 mediapipe = "^0.10.14"
+librosa = "^0.10.2.post1"
+pygame = "^2.6.0"
 
 
 [tool.poetry.group.dev.dependencies]

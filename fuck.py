@@ -12,7 +12,7 @@ def create_pairs(shapes, num_bounding_boxes, shape_steps):
 
     num_of_shapes = len(shapes)
 
-    y, sr = librosa.load("audio/sax.mp3", sr=16000)
+    y, sr = librosa.load("audio/piano.mp3", sr=16000)
 
     pairs = {}
 
