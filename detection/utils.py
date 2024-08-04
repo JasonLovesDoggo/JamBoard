@@ -34,7 +34,7 @@ def calibrate(frame, paper_roi):
         pickle.dump(shapes, f)
 
     print(f"Calibration complete. Detected {len(shapes)} shapes.")
-    return shapes   
+    return shapes
 
 
 def load_calibration():
@@ -42,7 +42,6 @@ def load_calibration():
         with open(CALIBRATION_PATH, "rb") as f:
             return pickle.load(f)
         return None
-
 
     # Iterate through detected hands and check if the finger is pressed
     # for hand_landmarks in results.multi_hand_landmarks:

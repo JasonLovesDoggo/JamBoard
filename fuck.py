@@ -30,7 +30,9 @@ def create_pairs(shapes, num_bounding_boxes, shape_steps):
                     pitch_shifted = librosa.effects.pitch_shift(
                         y, sr=sr, n_steps=int(steps_per_interval * k)
                     )
-                    time_stretched = librosa.effects.time_stretch(pitch_shifted, rate=0.2)
+                    time_stretched = librosa.effects.time_stretch(
+                        pitch_shifted, rate=0.2
+                    )
                     a = (time_stretched * 32767).astype(np.int16)
                     # sd.play(a, sr)
                     # time.sleep(1)
