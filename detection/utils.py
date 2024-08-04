@@ -34,12 +34,13 @@ def calibrate(frame, paper_roi):
             color = get_dominant_color(paper_area, contour)
             area = cv2.contourArea(contour)
             shapes.append((shape_name, (cx, cy), color, area))
-            shapes_objects.append(ShapeData(name=shape_name, area=area, color=color, center=(cx, cy,)))
+            shapes_objects.append(ShapeData(name=shape_name, size=area, color=color, center=(cx, cy,)))
 
     with open(CALIBRATION_PATH, "wb") as f:
         pickle.dump(shapes, f)
 
     print(f"Calibration complete. Detected {len(shapes)} shapes.")
+    print(f'{shapes_objects=}')
     return shapes
 
 

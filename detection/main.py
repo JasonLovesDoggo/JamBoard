@@ -8,36 +8,16 @@ from .types import ShapeData
 
 CURRENT_OBJECT: ShapeData | None = None
 
-WEBCAM_TOP = 1
-WEBCAM_SIDE = 2
-
-TABLE_HEIGHT = -0.3
-
 # Initialize MediaPipe hands
 mp_hands = mp.solutions.hands
 hands = mp_hands.Hands(
-    static_image_mode=False, max_num_hands=2, min_detection_confidence=0.5
+    static_image_mode=False, max_num_hands=1, min_detection_confidence=0.5
 )
 mp_drawing = mp.solutions.drawing_utils
 
-def finger_is_pressed(hand_landmarks,threshold=0.02):
-    index_tip = hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP]
-    index_dip = hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_DIP]
-    return abs(index_tip.z - index_dip.z) < threshold
+TOP_CAM = 1
+SIDE_CAM = 2
 
-def detect_finger_tap(image,hands,threshold=0.02):
-    # process image and find landmarks
-    image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    results = hands.process(image_rgb)
-
-    # Check if hand landmarks are detected
-    if not results.multi_hand_landmarks:
-        return False
-    
-    for hand_landmarks in results.multi_hand_landmarks:
-        if finger_is_pressed(hand_landmarks, threshold):
-            return True
-    return False
 
 def start():
     global CURRENT_OBJECT
@@ -47,36 +27,40 @@ def start():
     drawing_utils = hands_instance.drawing_utils
 
     if sys.platform == "darwin":  # Mac
-        cap = cv2.VideoCapture(0)
+        cap_top = cv2.VideoCapture(TOP_CAM)
+        cap_side = cv2.VideoCapture(SIDE_CAM)
     elif sys.platform in ["win32", "win64"]:  # Windows
-        cap = cv2.VideoCapture(WEBCAM_TOP, cv2.CAP_DSHOW)
-        sidecap = cv2.VideoCapture(WEBCAM_SIDE,cv2.CAP_DSHOW)
+        cap_top = cv2.VideoCapture(TOP_CAM, cv2.CAP_DSHOW)
+        cap_side = cv2.VideoCapture(SIDE_CAM, cv2.CAP_DSHOW)
     else:
-        cap = cv2.VideoCapture(WEBCAM_TOP)
+        cap_top = cv2.VideoCapture(TOP_CAM)
+        cap_side = cv2.VideoCapture(SIDE_CAM)
+        
     try:
         print("done video intalization")
-        if not cap.isOpened():
-            print("Error: Could not open webcam top.")
+        if not cap_top.isOpened():
+            print("Error: Could not open top webcam.")
             exit()
-        if not sidecap.isOpened():
-            print("Error: Could not open side camera")
+        if not cap_side.isOpened():
+            print("Error: Could not open side webcam.")
             exit()
- 
+            
+
         paper_roi = (100, 100, 540, 380)
         print("Press 'c' to recalibrate the shapes.")
         calibrated_shapes = load_calibration()
         if not calibrated_shapes:
-            ret, frame = cap.read()
+            ret, frame = cap_top.read()
             if not ret:
-                print("Failed to capture top frame. Exiting.")
-                cap.release()
+                print("Failed to capture frame. Exiting.")
+                cap_top.release()
                 cv2.destroyAllWindows()
                 exit()
             calibrated_shapes = calibrate(frame, paper_roi)
 
-        while cap.isOpened() and sidecap.isOpened():
-            # print(f'{CURRENT_OBJECT=}')
-            success, image = cap.read()
+        while cap_top.isOpened():
+            print(f'{CURRENT_OBJECT=}')
+            success, image = cap_top.read()
             if not success:
                 print("Ignoring empty camera frame.")
                 continue
@@ -85,7 +69,7 @@ def start():
             image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
             image.flags.writeable = False
 
-            # Process the top image and detect hands
+            # Process the image and detect hands
             results = hands.process(image)
 
             # Draw the hand annotations on the image
@@ -114,21 +98,12 @@ def start():
                     index_tip = hand_landmarks.landmark[
                         mp_hands.HandLandmark.INDEX_FINGER_TIP
                     ]
-                    # print('finger tip',index_tip)
-
-                    # if finger_y less than table height + 0.05
-
-                    if index_tip.z < TABLE_HEIGHT:
-                        print('touched',CURRENT_OBJECT)
-                    else:
-                        continue 
-        
                     finger_tip = (int(index_tip.x * w), int(index_tip.y * h))
                     # print('the finger tip is currently at',finger_tip)
                     cv2.circle(image, finger_tip, 10, (0, 255, 0), cv2.FILLED)
 
             # shadow detection
-            ret, frame = cap.read()
+            ret, frame = cap_top.read()
             for shape_name, (cx, cy), color, area in calibrated_shapes:
                 cv2.circle(image, (cx, cy), 5, (0, 255, 0), -1)
                 cv2.putText(
@@ -194,20 +169,11 @@ def start():
                 break
             elif key == ord("c"):
                 print("Recalibrating...")
-                _, frame = cap.read()
+                _, frame = cap_top.read()
                 calibrated_shapes = calibrate(frame, paper_roi)
-            # tapping logic
-            ret_side,frame_side = sidecap.read()
-            if detect_finger_tap(frame_side,hands):
-                if CURRENT_OBJECT is None:
-                    continue
-                pass
-            # pass current obj into music engine.
-        
-        
     finally:
         hands.close()
-        cap.release()
+        cap_top.release()
         cv2.destroyAllWindows()
 
 
