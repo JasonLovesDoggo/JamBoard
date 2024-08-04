@@ -12,7 +12,7 @@ def create_pairs(shapes, num_bounding_boxes, shape_steps):
 
     num_of_shapes = len(shapes)
 
-    y, sr = librosa.load("short2.mp3", sr=16000)
+    y, sr = librosa.load("audio/sax.mp3", sr=16000)
 
     pairs = {}
 
@@ -28,9 +28,9 @@ def create_pairs(shapes, num_bounding_boxes, shape_steps):
                 rainbow = []
                 for k in range(1, num_bounding_boxes + 1):
                     pitch_shifted = librosa.effects.pitch_shift(
-                        y, sr=sr, n_steps=steps_per_interval * k
+                        y, sr=sr, n_steps=int(steps_per_interval * k)
                     )
-                    time_stretched = librosa.effects.time_stretch(pitch_shifted, rate=1)
+                    time_stretched = librosa.effects.time_stretch(pitch_shifted, rate=0.2)
                     a = (time_stretched * 32767).astype(np.int16)
                     # sd.play(a, sr)
                     # time.sleep(1)
