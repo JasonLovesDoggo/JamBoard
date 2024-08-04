@@ -8,10 +8,14 @@ from .types import ShapeData
 from typing import List
 from .tapping import calibrate_touch
 from .sound_main import findclosest
-
+from .fuck import create_pairs
 
 shapes_formatted: dict = {}
+pairs_grouping: dict = {}
 shapes_objects: List[ShapeData] = []
+
+
+
 def populate_shapes_formatted(shapes_objects):
     global shapes_formatted
     shapes_formatted.clear()
@@ -72,6 +76,10 @@ def calibrate(frame, paper_roi, /, cap_side):
     # print(f'{shapes_objects=}')
     calibrate_touch(cap_side=cap_side)
     populate_shapes_formatted(shapes_objects)
+    pairs_grouping.clear()
+    for shape in shapes_formatted.keys():
+        pairs = create_pairs(shapes_formatted[shape], 8, shape)
+        pairs_grouping[shape] = pairs
     return shapes
 
 

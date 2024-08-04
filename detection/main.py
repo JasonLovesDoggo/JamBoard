@@ -7,11 +7,11 @@ from .utils import (
     calibrate,
     initialize_video_captures,
     check_video_capture,
-    shapes_formatted
+    shapes_formatted,
+    pairs_grouping as pairs_dict,
 )
 
 import pygame
-from .fuck import create_pairs
 from .calculations import (find_nearest_line_to_finger_tip, create_bounding_box_centers, check_if_finger_tip_is_in_bounding_box)
 
 from .tapping import is_tapped
@@ -43,17 +43,12 @@ def main_loop(cap_top, cap_side, hands, drawing_utils, paper_roi):
 
     
     bounding_box_size = 75
-    num_bounding_boxes = 8
+    num_bounding_boxes = 8 # also mentioned at the bottom of callibrate 
     # shape_steps = [0 for i in range(4)]
 
     pygame.mixer.pre_init(frequency=16000, channels=1, allowedchanges=0)
     pygame.init()
     pygame.mixer.init()
-
-    pairs_dict = {}
-    for shape in shapes_formatted.keys():
-        pairs = create_pairs(shapes_formatted[shape], num_bounding_boxes, shape)
-        pairs_dict[shape] = pairs
 
     while cap_top.isOpened() and cap_side.isOpened():
         success, image = cap_top.read()
@@ -89,7 +84,6 @@ def main_loop(cap_top, cap_side, hands, drawing_utils, paper_roi):
                     finger_tip = current_finger_position
 
                     nearest_line_connection = None
-                    print(f'{shapes_formatted=}')
                     if len(shapes_formatted[starting_note_info.name]) > 1:
                         points = []
                         for i in shapes_formatted[starting_note_info.name]:
