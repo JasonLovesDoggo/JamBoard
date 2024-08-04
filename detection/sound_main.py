@@ -55,20 +55,6 @@ def findclosest(input_color):
     return color
 
 
-def populate_shapes_formatted(shapes_objects):
-    shapes_formatted = {}
-    for shape in shapes_objects:
-        if shape.name in shapes_formatted:
-            shapes_formatted[shape.name].append(
-                {"center": shape.center, "color": findclosest(shape.color), "size": shape.size}
-            )
-        else:
-            shapes_formatted[shape.name] = [
-                {"center": shape.center, "color": findclosest(shape.color), "size": shape.size}
-            ]
-    return shapes_formatted
-
-
 def main():
     # Pre Click Data, can be placed in calibration stage
     shapes_formatted = populate_shapes_formatted(shapes_objects)

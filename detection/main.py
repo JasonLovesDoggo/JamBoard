@@ -7,21 +7,20 @@ from .utils import (
     calibrate,
     initialize_video_captures,
     check_video_capture,
-    shapes_objects
+    shapes_formatted
 )
+
 import pygame
-from .sound_main import populate_shapes_formatted
 from .fuck import create_pairs
 from .calculations import (find_nearest_line_to_finger_tip, create_bounding_box_centers, check_if_finger_tip_is_in_bounding_box)
-import time
 
 from .tapping import is_tapped
-
 mp_hands = mp.solutions.hands
 hands = mp_hands.Hands(
     static_image_mode=False, max_num_hands=1, min_detection_confidence=0.5
 )
 mp_drawing = mp.solutions.drawing_utils
+
 
 
 def main_loop(cap_top, cap_side, hands, drawing_utils, paper_roi):
@@ -42,9 +41,7 @@ def main_loop(cap_top, cap_side, hands, drawing_utils, paper_roi):
         None  # Variable to store current position of the index finger
     )
 
-    # MINGLUNS MESS OF CODE
-    shapes_formatted = populate_shapes_formatted(shapes_objects)
-
+    
     bounding_box_size = 75
     num_bounding_boxes = 8
     # shape_steps = [0 for i in range(4)]
@@ -92,6 +89,7 @@ def main_loop(cap_top, cap_side, hands, drawing_utils, paper_roi):
                     finger_tip = current_finger_position
 
                     nearest_line_connection = None
+                    print(f'{shapes_formatted=}')
                     if len(shapes_formatted[starting_note_info.name]) > 1:
                         points = []
                         for i in shapes_formatted[starting_note_info.name]:

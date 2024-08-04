@@ -7,12 +7,27 @@ from .constants import *
 from .types import ShapeData
 from typing import List
 from .tapping import calibrate_touch
+from .sound_main import findclosest
 
+
+shapes_formatted: dict = {}
 shapes_objects: List[ShapeData] = []
-
+def populate_shapes_formatted(shapes_objects):
+    global shapes_formatted
+    shapes_formatted.clear()
+    for shape in shapes_objects:
+        if shape.name in shapes_formatted:
+            shapes_formatted[shape.name].append(
+                {"center": shape.center, "color": findclosest(shape.color), "size": shape.size}
+            )
+        else:
+            shapes_formatted[shape.name] = [
+                {"center": shape.center, "color": findclosest(shape.color), "size": shape.size}
+            ]
+    return shapes_formatted
 
 def calibrate(frame, paper_roi, /, cap_side):
-    global shapes_objects
+    global shapes_objects, shapes_formatted
     shapes_objects.clear() # Clear the list of shapes
     paper_area = frame[paper_roi[1] : paper_roi[3], paper_roi[0] : paper_roi[2]]
     gray = cv2.cvtColor(paper_area, cv2.COLOR_BGR2GRAY)
@@ -56,6 +71,7 @@ def calibrate(frame, paper_roi, /, cap_side):
     print(f"Calibration complete. Detected {len(shapes)} shapes.")
     # print(f'{shapes_objects=}')
     calibrate_touch(cap_side=cap_side)
+    populate_shapes_formatted(shapes_objects)
     return shapes
 
 
