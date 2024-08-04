@@ -26,7 +26,7 @@ def create_pairs(shapes, num_bounding_boxes, shape_steps):
                 ) / num_bounding_boxes
 
                 rainbow = []
-                for k in range(1, num_bounding_boxes + 1):
+                for k in range(num_bounding_boxes):
                     pitch_shifted = librosa.effects.pitch_shift(
                         y, sr=sr, n_steps=int(steps_per_interval * k)
                     )
@@ -44,7 +44,8 @@ def create_pairs(shapes, num_bounding_boxes, shape_steps):
 
 
 if __name__ == "__main__":
-    create_pairs(["A", "B", "C", "D"], 10, [5, 12, 3, 8])
+    pairs = create_pairs([(10, 10), (20, 20), (9, 40)], 8, [5, 12, 3, 8])
+    print(pairs)
 
 # print(stepsPerInterval)
 
