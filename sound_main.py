@@ -13,6 +13,9 @@ shapes_objects = [
     ShapeData(size=2136.5, color=(96, 90, 116), center=(259, 173), name='Rectangle'),
     ShapeData(size=1000, color=(255, 14, 85), center=(320,320), name='Rectangle'),
     ShapeData(size=1000, color=(0,0,0), center=(50,50), name='Rectangle'), 
+    ShapeData(size=2136.5, color=(96, 90, 116), center=(259, 173), name='Triangle'),
+    ShapeData(size=1000, color=(255, 14, 85), center=(320,320), name='Triangle'),
+    ShapeData(size=1000, color=(0,0,0), center=(50,50), name='Triangle'), 
     ShapeData(size=1794.5, color=(39, 32, 38), center=(364, 299), name='Hexagon')
 ]
 
@@ -37,13 +40,6 @@ color_mapping = {
     "black": 11, #B
 }
 
-instrument_mapping = {
-    "Rectangle": "piano",
-    "Square": "piano",
-    "Circle": "drums",
-    "Triangle": "sax"
-}
-
 
 def distance(a,b):
     dx = a[0]-b[0]
@@ -61,41 +57,46 @@ def findclosest(input_color):
     return color
 
 def populate_shapes_formatted(shapes_objects):
-    alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     shapes_formatted = {}
     for shape in shapes_objects:
         if shape.name in shapes_formatted:
-            shapes_formatted[shape.name].append(shape.center)
+            shapes_formatted[shape.name].append({'center': shape.center, 'color': shape.color, 'size': shape.size})
         else:
-            shapes_formatted[shape.name] = [shape.center]
+            shapes_formatted[shape.name] = [{'center': shape.center, 'color': shape.color, 'size': shape.size}]
     return shapes_formatted
 
 def main():
-    # sd.default.latency = 'low'
+    # Pre Click Data, can be placed in calibration stage
     shapes_formatted = populate_shapes_formatted(shapes_objects)
-    print(shapes_formatted)
     
-    starting_note_info = ShapeData(size=1000, color=(255, 14, 85), center=(320,320), name='Rectangle')
-    points = {"A": (10, 10), "B": (20, 20), "C": (0, 0), "D": (9, 40)}
-    finger_tip = (20, 20)
-    starting_note = "A"
-    bounding_box_size = 2
+    bounding_box_size = 50
     num_bounding_boxes = 8
-    shape_steps = [0, 12, -3, -8]
     # shape_steps = [0 for i in range(4)]
 
     pygame.mixer.pre_init(frequency=16000, channels=1, allowedchanges=0)
     pygame.init()
     pygame.mixer.init()
 
-    pairs = create_pairs(list(points.values()), num_bounding_boxes, shape_steps)
-
+    pairs_dict = {}
+    for shape in shapes_formatted.keys():
+        pairs = create_pairs(shapes_formatted[shape], num_bounding_boxes, shape)   
+        pairs_dict[shape] = pairs
+        
+        
+    #after click
+    
+    starting_note_info = ShapeData(size=1000, color=(0,0,0), center=(50,50), name='Rectangle')
+    finger_tip = (150, 120)
+    
+    points = []
+    for i in shapes_formatted[starting_note_info.name]:
+        points.append(i['center'])
     nearest_line_connection = find_nearest_line_to_finger_tip(
-        finger_tip, points, starting_note
+        finger_tip, points, starting_note_info
     )
     print(nearest_line_connection)
     bounding_box_centers = create_bounding_box_centers(
-        points[starting_note], points[nearest_line_connection], num_bounding_boxes
+        starting_note_info.center, nearest_line_connection, num_bounding_boxes
     )
 
     selected_bounding_box_index = None
@@ -113,21 +114,21 @@ def main():
         prev_channel = None
 
         for i in range(10):
-            for pair in pairs[starting_note + nearest_line_connection]:
+            for pair in pairs_dict[starting_note_info.name][starting_note_info.center + nearest_line_connection]:
                 channel = pair.play()
                 time.sleep(0.05)
                 if prev_channel is not None:
                     prev_channel.stop()
-                time.sleep(1)  # Adjust the sleep duration as needed
+                time.sleep(0.05)  # Adjust the sleep duration as needed
 
                 prev_channel = channel
 
-            for pair in pairs[starting_note + nearest_line_connection][::-1]:
+            for pair in pairs_dict[starting_note_info.name][starting_note_info.center + nearest_line_connection][::-1]:
                 channel = pair.play()
                 time.sleep(0.05)
                 if prev_channel is not None:
                     prev_channel.stop()
-                time.sleep(1)  # Adjust the sleep duration as needed
+                time.sleep(0.05)  # Adjust the sleep duration as needed
 
                 prev_channel = channel
         # pairs[starting_note+nearest_line_connection][0].play()

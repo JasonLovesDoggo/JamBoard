@@ -2,6 +2,7 @@ import numpy as np
 
 
 def find_distance_from_point_to_line(point, line_start, line_end):
+    print(point, line_start, line_end)
     A = np.array(point)
     B = np.array(line_start)
     C = np.array(line_end)
@@ -46,10 +47,10 @@ def create_bounding_box_centers(start, end, steps):
 def find_nearest_line_to_finger_tip(finger_tip, points, start_note):
     nearest_line = None
     min_distance = float("inf")
-    for point in points.keys():
-        if points[point] != points[start_note]:
+    for point in points:
+        if point != start_note.center:
             distance = find_distance_from_point_to_line(
-                finger_tip, points[start_note], points[point]
+                finger_tip, start_note.center, point
             )
             print(point, distance)
             if distance < min_distance:

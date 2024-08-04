@@ -1,1 +1,1 @@
-    shape_steps = [0 for i in range(4)]
+size
