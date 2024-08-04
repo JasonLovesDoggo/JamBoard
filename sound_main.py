@@ -4,11 +4,78 @@ import sounddevice as sd
 import librosa
 import time
 import pygame
+from detection.utils import *
+import math
+from detection.types import ShapeData
 
+shapes_objects = [
+    ShapeData(size=1221.0, color=(126, 109, 97), center=(306, 218), name='Circle'), 
+    ShapeData(size=2136.5, color=(96, 90, 116), center=(259, 173), name='Rectangle'),
+    ShapeData(size=1000, color=(255, 14, 85), center=(320,320), name='Rectangle'),
+    ShapeData(size=1000, color=(0,0,0), center=(50,50), name='Rectangle'), 
+    ShapeData(size=1794.5, color=(39, 32, 38), center=(364, 299), name='Hexagon')
+]
+
+colors = [
+    
+    ("black", (0, 0, 0)),
+    ("red", (255, 0, 0)),
+    ("purple", (128, 0, 128)),
+    ("green", (0, 128, 0)),
+    ("yellow", (255, 255, 0)),
+    ("blue", (0, 0, 255)),
+    ("orange", (255,165,0))
+]
+
+color_mapping = {
+    "red": 0, #C 0 steps away since base note is a C
+    "orange": 2, #D
+    "yellow": 4, #E
+    "green": 5, #F
+    "blue": 7, #G
+    "purple": 9, #A
+    "black": 11, #B
+}
+
+instrument_mapping = {
+    "Rectangle": "piano",
+    "Square": "piano",
+    "Circle": "drums",
+    "Triangle": "sax"
+}
+
+
+def distance(a,b):
+    dx = a[0]-b[0]
+    dy = a[1]-b[1]
+    dz = a[2]-b[2]
+    return math.sqrt(dx*dx+dy*dy+dz*dz)
+
+def findclosest(input_color):
+    mn = 999999
+    for name,rgb in colors:
+        d = distance(input_color, rgb)
+        if d < mn:
+            mn = d
+            color = name
+    return color
+
+def populate_shapes_formatted(shapes_objects):
+    alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    shapes_formatted = {}
+    for shape in shapes_objects:
+        if shape.name in shapes_formatted:
+            shapes_formatted[shape.name].append(shape.center)
+        else:
+            shapes_formatted[shape.name] = [shape.center]
+    return shapes_formatted
 
 def main():
     # sd.default.latency = 'low'
-
+    shapes_formatted = populate_shapes_formatted(shapes_objects)
+    print(shapes_formatted)
+    
+    starting_note_info = ShapeData(size=1000, color=(255, 14, 85), center=(320,320), name='Rectangle')
     points = {"A": (10, 10), "B": (20, 20), "C": (0, 0), "D": (9, 40)}
     finger_tip = (20,20)
     starting_note = "A"
@@ -21,7 +88,7 @@ def main():
     pygame.init()
     pygame.mixer.init()
 
-    pairs = create_pairs(list(points.keys()), num_bounding_boxes, shape_steps)
+    pairs = create_pairs(list(points.values()), num_bounding_boxes, shape_steps)
 
     nearest_line_connection = find_nearest_line_to_finger_tip(
         finger_tip, points, starting_note
