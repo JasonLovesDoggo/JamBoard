@@ -1,5 +1,5 @@
 from detection.calculations import *
-from .fuck import *
+from .pairs import *
 import time
 import pygame
 from detection.utils import *

@@ -1,6 +1,4 @@
 import librosa
-import sounddevice as sd
-import time
 import pygame
 import numpy as np
 
@@ -45,7 +43,7 @@ def create_frequency(area):
     threshold = 60
     factor = 10
     edge_approx = int(np.sqrt(area))
-    return int((edge_approx - threshold) / factor)
+    return int((edge_approx - threshold) / factor)*-1
 
 
 def create_pairs(shapes, num_bounding_boxes, shape_name):
